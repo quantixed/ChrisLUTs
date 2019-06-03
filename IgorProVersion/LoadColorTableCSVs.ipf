@@ -2,8 +2,9 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 Menu "Macros"
-	"Load Color Tables...",  LoadColorTables()
+	"Load Color Tables...", LoadColorTables()
 	"Color Tables from LUTs...", LoadLUTColorTables()
+	"Save Color Tables...", SaveColorTableWaves()
 End
 
 Function LoadColorTables()
@@ -147,4 +148,28 @@ Function LoadLUTColorTables()
 		AppendLayoutObject/W=summaryLayout/PAGE=(pgnum) graph $plotName
 	endfor
 	TileLayout(nFiles,21)
+End
+
+Function SaveColorTableWaves()
+	String wList = WaveList("ColorTable_*",";","")
+	Variable nWaves = ItemsInList(wList)
+	String wName, fileName
+	WAVE/Z/T CTNameWave
+	if(!WaveExists(CTNameWave))
+		DoAlert 0, "No Color Table Name Wave."
+	endif
+	NewPath/O/Q/M="Save ibw file in..." SaveDiskFolder
+	if (V_flag!=0)
+		DoAlert 0, "Disk folder error"
+		Return -1
+	endif
+	
+	Variable i
+	
+	for(i = 0; i < nWaves; i += 1)
+		wName = StringFromList(i, wList)
+		Wave w0 = $wName
+		fileName = CTNameWave[i] + ".ibw"
+		Save/C/O/P=SaveDiskFolder w0 as fileName
+	endfor
 End
