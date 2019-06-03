@@ -26,7 +26,6 @@ Function LoadColorTables()
 	Variable nFiles=ItemsInList(FileList)
 	Make/O/T/N=(nFiles) CTNameWave
 	Make/O/N=(256,40) testimg=p
-	MakeSummaryLayout(nFiles,21)
 	
 	for (FileLoop = 0; FileLoop < nFiles; FileLoop += 1)
 		ThisFile = StringFromList(FileLoop, FileList)
@@ -43,10 +42,20 @@ Function LoadColorTables()
 		ModifyImage/W=$plotName testimg ctab= {*,*,ctMat,0}
 		ModifyGraph/W=$plotName nticks(left)=0,noLabel(left)=2
 		TextBox/C/N=text0/F=0/A=LB/X=5.00/Y=0.00/E RemoveEnding(ThisFile,".csv")
-		pgnum = 1 + floor(FileLoop / 21)
+	endfor
+	
+	Variable TablesPerPage = 27
+	MakeSummaryLayout(nFiles,TablesPerPage)
+	WAVE/Z/T CTNameWave
+	Make/O/FREE/N=(nFiles) tempIWave=p
+	Sort CTNameWave, tempIWave
+	
+	for (FileLoop = 0; FileLoop < nFiles; FileLoop += 1)
+		plotName = "img" + num2str(tempIWave[FileLoop])
+		pgnum = 1 + floor(FileLoop / TablesPerPage)
 		AppendLayoutObject/W=summaryLayout/PAGE=(pgnum) graph $plotName
 	endfor
-	TileLayout(nFiles,21)
+	TileLayout(nFiles,TablesPerPage)
 End
 
 ///	@param	nFiles	total number of TIFFs
@@ -73,6 +82,7 @@ End
 Function TileLayout(nFiles,plotNum)
 	Variable nFiles,plotNum
 	Variable pgMax = floor((nFiles -1) / plotNum) + 1
+	Variable nRow = ceil(plotNum / 3)
 	
 	Variable i
 	
@@ -80,7 +90,7 @@ Function TileLayout(nFiles,plotNum)
 	for(i = 1; i < pgMax + 1; i += 1)
 		LayoutPageAction/W=summaryLayout page=(i)
 		ModifyLayout/W=summaryLayout frame=0,trans=1
-		Execute /Q "Tile/A=(7,3)/O=1"
+		Execute /Q "Tile/A=("+num2str(nRow)+",3)/O=1"
 	endfor
 	SavePICT/PGR=(1,-1)/E=-2/W=(0,0,0,0) as "summary.pdf"
 End
@@ -107,7 +117,6 @@ Function RenameCTs()
 	endfor
 End
 
-	
 Function LoadLUTColorTables()
 	// This will load from a folder of waves
 	// rewrote some existing code to load in
@@ -127,7 +136,6 @@ Function LoadLUTColorTables()
 	Variable nFiles=ItemsInList(FileList)
 	Make/O/T/N=(nFiles) CTNameWave
 	Make/O/N=(256,40) testimg=p
-	MakeSummaryLayout(nFiles,21)
 	
 	for (FileLoop = 0; FileLoop < nFiles; FileLoop += 1)
 		ThisFile = StringFromList(FileLoop, FileList)
@@ -144,10 +152,20 @@ Function LoadLUTColorTables()
 		ModifyImage/W=$plotName testimg ctab= {*,*,ctMat,0}
 		ModifyGraph/W=$plotName nticks(left)=0,noLabel(left)=2
 		TextBox/C/N=text0/F=0/A=LB/X=5.00/Y=0.00/E RemoveEnding(ThisFile,".lut")
-		pgnum = 1 + floor(FileLoop / 21)
+	endfor
+	
+	Variable TablesPerPage = 27
+	MakeSummaryLayout(nFiles,TablesPerPage)
+	WAVE/Z/T CTNameWave
+	Make/O/FREE/N=(nFiles) tempIWave=p
+	Sort CTNameWave, tempIWave
+	
+	for (FileLoop = 0; FileLoop < nFiles; FileLoop += 1)
+		plotName = "img" + num2str(tempIWave[FileLoop])
+		pgnum = 1 + floor(FileLoop / TablesPerPage)
 		AppendLayoutObject/W=summaryLayout/PAGE=(pgnum) graph $plotName
 	endfor
-	TileLayout(nFiles,21)
+	TileLayout(nFiles,TablesPerPage)
 End
 
 Function SaveColorTableWaves()
